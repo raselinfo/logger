@@ -1,5 +1,5 @@
 # Logger
-[Logger image](./images/logger.png)
+[Logger image](https://github.com/raselinfo/logger/blob/main/images/logger.png?raw=true)
 
 - [Morgan](https://github.com/expressjs/morgan)
 - Wins
