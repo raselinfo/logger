@@ -7,6 +7,9 @@ const path = require("path")
 const morgan = require("morgan")
 const { v4: uuid } = require('uuid');
 
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.json'), { flags: 'a' })
+
+
 morgan.token("id", (req) => {
     return uuid()
 })
@@ -33,8 +36,8 @@ process.env.MODE === "DEVELOPMENT" ?
             date: tokens['date'](req, res, 'iso'),
             time: tokens['total-time'](req, res, 4),
             id: tokens['id'](req, res)
-        })
-    }))
+        }) + ","
+    }, { stream: accessLogStream }))
 
 
 
