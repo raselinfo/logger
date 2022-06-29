@@ -27,19 +27,35 @@ app.use(
 
 **Custom Stylish Logger**
 ```js
+morgan.token("id", (req) => {
+    return uuid()
+})
+
+
 process.env.MODE === "DEVELOPMENT" ?
     app.use(
         morgan(`
-    ✨✨✨✨✨✨✨✨
+    ✨START✨✨✨✨✨✨✨
     🙋 Method   *:method 
     🔗 URl      *:url 
     📋 Status   *:status 
     📅 Date     *:date[iso] 
     ⏰ Time     *:total-time[4]ms 
-    ✨✨✨✨✨✨✨✨
+    🆔 ID       :id    
+    ✨END✨✨✨✨✨✨✨
 `
         )
     )
     :
-    app.use(morgan(":method * :url * :status * :date[iso] * :total-time[4]ms"))
+    app.use(morgan((tokens, req, res) => {
+        return JSON.stringify({
+            method: tokens['method'](req, res),
+            url: tokens['url'](req, res),
+            status: tokens['status'](req, res),
+            date: tokens['date'](req, res, 'iso'),
+            time: tokens['total-time'](req, res, 4),
+            id: tokens['id'](req, res)
+        })
+    }))
+
 ```
