@@ -1,13 +1,31 @@
+require("dotenv").config()
 const express = require("express")
 const app = express()
 const router = express.Router()
+const fs = require("fs")
+const path = require("path")
 const morgan = require("morgan")
 
-app.use(morgan("tiny"))
+
+process.env.MODE === "DEVELOPMENT" ?
+    app.use(
+        morgan(`
+    ✨✨✨✨✨✨✨✨
+    🙋 Method   *:method 
+    🔗 URl      *:url 
+    📋 Status   *:status 
+    📅 Date     *:date[iso] 
+    ⏰ Time     *:total-time[4]ms 
+    ✨✨✨✨✨✨✨✨
+`
+        )
+    )
+    :
+    app.use(morgan(":method * :url * :status * :date[iso] * :total-time[4]ms"))
+
 
 
 router.route("/users").get((req, res) => {
-    console.log(`${req.method} ${req.url} ${new Date().toISOString()}`)
     res.send("hello get route")
 }).post((req, res) => {
     res.send("hello post route")
