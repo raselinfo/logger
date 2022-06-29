@@ -14,21 +14,24 @@ const logger = (app) => {
     })
 
     process.env.MODE === "DEVELOPMENT" ?
-        app.use(
-            morgan(`
-    ✨START✨✨✨✨✨✨✨
-    🙋 Method   *:method 
-    🔗 URl      *:url 
-    📋 Status   *:status 
-    📅 Date     *:date[iso] 
-    ⏰ Time     *:total-time[4]ms 
-    🆔 ID       :id   
-    💪 Body     * :body 
-    👑 JWT      :token
-    ✨END✨✨✨✨✨✨✨
-`
-            )
-        )
+        app.use(morgan((tokens, req, res) => {
+            return `
+            ✨START✨✨✨✨✨✨✨
+            🙋 Method    * ${tokens.method(req, res)}
+            🔗 URl       * ${tokens.url(req, res)}
+            📋 Status    * ${tokens.status(req, res) <= 400 ?
+                    "✅" + tokens.status(req, res) + "✅"
+                    :
+                    "⚠️" + tokens.status(req, res) + "⚠️"
+                }
+            📅 Date      * ${tokens.date(req, res, "iso")}
+            ⏰ Time      * ${tokens['total-time'](req, res, 4) + "ms"}
+            🆔 ID        * ${tokens.id(req,res)}
+            💪 Body      * ${tokens.body(req,res)}
+            👑 JWT       * ${tokens.id(req,res)}
+            ✨END✨✨✨✨✨✨✨
+            `
+        }))
         :
         app.use(morgan((tokens, req, res) => {
 
