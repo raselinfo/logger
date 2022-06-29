@@ -2,10 +2,10 @@ require("dotenv").config()
 const express = require("express")
 const app = express()
 const router = express.Router()
-const logger = require('./logger')
+const logger = require('./logger/logger')
 app.use(express.json())
 // MORGAN exported from logger.js file
-logger(app)
+logger(app, {  })
 
 
 router.route("/users").get((req, res) => {

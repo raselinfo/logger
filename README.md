@@ -1,5 +1,6 @@
 # Logger
-[Logger image](https://github.com/raselinfo/logger/blob/main/images/logger.png?raw=true)
+
+![Logger image](https://github.com/raselinfo/logger/blob/main/images/logger.png?raw=true)
 
 - [Morgan](https://github.com/expressjs/morgan)
 - Wins
@@ -81,27 +82,59 @@ const production = morgan(
 );
 
 // Development log
-const development = morgan((tokens, req, res) => {
-  return `
-            ✨START✨✨✨✨✨✨✨
-            🙋 Method    * ${tokens.method(req, res)}
-            🔗 URl       * ${tokens.url(req, res)}
-            📋 Status    * ${
-              tokens.status(req, res) <= 400
-                ? "✅" + tokens.status(req, res) + "✅"
-                : "⚠️" + tokens.status(req, res) + "⚠️"
-            }
-            📅 Date      * ${tokens.date(req, res, "iso")}
-            ⏰ Time      * ${tokens["total-time"](req, res, 4) + "ms"}
-            🆔 ID        * ${tokens.id(req, res)}
-            💪 Body      * ${tokens.body(req, res)}
-            👑 JWT       * ${tokens.token(req, res)}
-            ✨END✨✨✨✨✨✨✨
-            `;
-});
+const development = ({ method, url, status, date, time, id, body, jwt }) => {
+  return morgan((tokens, req, res) => {
+    let str = `\n✨START✨✨✨✨✨✨✨\n`;
+    if (method) {
+      str += `🙋 Method    * ${tokens.method(req, res)}\n`;
+    }
+    if (url) {
+      str += `🔗 URl       * ${tokens.url(req, res)}\n`;
+    }
+    if (status) {
+      str += `📋 Status    * ${
+        tokens.status(req, res) <= 400
+          ? "✅" + tokens.status(req, res) + "✅"
+          : "👿" + tokens.status(req, res) + "👿"
+      }\n`;
+    }
+    if (date) {
+      str += `📅 Date      * ${tokens
+        .date(req, res, "iso")
+        .slice(0, 19)
+        .replace("T", " ")}\n`;
+    }
+    if (time) {
+      str += `⏰ Time      * ${tokens["total-time"](req, res, 4) + "ms"}\n`;
+    }
+    if (id) {
+      str += `🆔 ID        * ${tokens.id(req, res)}\n`;
+    }
+    if (body) {
+      str += `💪 Body      * ${tokens.body(req, res)}\n`;
+    }
+    if (jwt) {
+      str += `👑 JWT       * ${tokens.token(req, res)}\n`;
+    }
+    str += `✨END✨✨✨✨✨✨✨✨\n`;
+    return str;
+  });
+};
 
 // Logger function
-const logger = (app) => {
+const logger = (app, data) => {
+  let options = {
+    method: true,
+    url: true,
+    status: true,
+    date: true,
+    time: true,
+    id: true,
+    body: true,
+    jwt: true,
+    ...data,
+  };
+
   // Custom id formatter
   morgan.token("id", (req) => uuid());
   // Custom request body formatter
@@ -110,7 +143,7 @@ const logger = (app) => {
   morgan.token("token", (req) => req.headers.authorization);
 
   process.env.NODE_ENV.trim(" ") === "development"
-    ? app.use(development)
+    ? app.use(development(options))
     : app.use(production);
 };
 
