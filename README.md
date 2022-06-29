@@ -51,21 +51,37 @@ process.env.MODE === "DEVELOPMENT"
 **Custom Stylish Logger And JSON formate Logger**
 
 ```js
-morgan.token("id", (req) => {
-  return uuid();
-});
-morgan.token("body", (req, _res) => {
-  return JSON.stringify(req.body);
-});
+const morgan = require("morgan");
+const { v4: uuid } = require("uuid");
+const fs = require("fs");
+const path = require("path");
 
-morgan.token("token", (req) => {
-  return req.headers.authorization;
-});
+// Save the production log
+const accessLogStream = fs.createWriteStream(
+  path.resolve("log", "access.log"),
+  { flags: "a" }
+);
 
-process.env.MODE === "DEVELOPMENT"
-  ? app.use(
-      morgan((tokens, req, res) => {
-        return `
+// Production log
+const production = morgan(
+  (tokens, req, res) => {
+    return (
+      JSON.stringify({
+        method: tokens["method"](req, res),
+        url: tokens["url"](req, res),
+        status: tokens["status"](req, res),
+        date: tokens["date"](req, res, "iso"),
+        time: tokens["total-time"](req, res, 4),
+        id: tokens["id"](req, res),
+      }) + ";"
+    );
+  },
+  { stream: accessLogStream }
+);
+
+// Development log
+const development = morgan((tokens, req, res) => {
+  return `
             ✨START✨✨✨✨✨✨✨
             🙋 Method    * ${tokens.method(req, res)}
             🔗 URl       * ${tokens.url(req, res)}
@@ -78,23 +94,24 @@ process.env.MODE === "DEVELOPMENT"
             ⏰ Time      * ${tokens["total-time"](req, res, 4) + "ms"}
             🆔 ID        * ${tokens.id(req, res)}
             💪 Body      * ${tokens.body(req, res)}
-            👑 JWT       * ${tokens.id(req, res)}
+            👑 JWT       * ${tokens.token(req, res)}
             ✨END✨✨✨✨✨✨✨
             `;
-      })
-    )
-  : app.use(
-      morgan((tokens, req, res) => {
-        return (
-          JSON.stringify({
-            method: tokens["method"](req, res),
-            url: tokens["url"](req, res),
-            status: tokens["status"](req, res),
-            date: tokens["date"](req, res, "iso"),
-            time: tokens["total-time"](req, res, 4),
-            id: tokens["id"](req, res),
-          }) + ","
-        );
-      })
-    );
+});
+
+// Logger function
+const logger = (app) => {
+  // Custom id formatter
+  morgan.token("id", (req) => uuid());
+  // Custom request body formatter
+  morgan.token("body", (req, _res) => JSON.stringify(req.body));
+  // Custom header authorization formatter
+  morgan.token("token", (req) => req.headers.authorization);
+
+  process.env.NODE_ENV.trim(" ") === "development"
+    ? app.use(development)
+    : app.use(production);
+};
+
+module.exports = logger;
 ```
