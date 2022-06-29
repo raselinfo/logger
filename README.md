@@ -1,4 +1,5 @@
 # Logger
+[Logger image](./images/logger.png)
 
 - [Morgan](https://github.com/expressjs/morgan)
 - Wins
@@ -48,7 +49,7 @@ process.env.MODE === "DEVELOPMENT"
     );
 ```
 
-**Custom Stylish Logger And JSON formate Logger**
+**Custom stylish logger for Development and production**
 
 ```js
 const morgan = require("morgan");
@@ -58,7 +59,7 @@ const path = require("path");
 
 // Save the production log
 const accessLogStream = fs.createWriteStream(
-  path.resolve("log", "access.log"),
+  path.resolve("logs", "access.log"),
   { flags: "a" }
 );
 

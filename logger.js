@@ -5,9 +5,8 @@ const path = require("path")
 
 // Save the production log
 const accessLogStream = fs.createWriteStream(
-    path.resolve('log', "access.log"),
+    path.resolve('logs', "access.log"),
     { flags: 'a' })
-
 
 // Production log
 const production = morgan((tokens, req, res) => {
